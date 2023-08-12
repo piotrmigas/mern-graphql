@@ -88,7 +88,7 @@ export default function AddProjectModal() {
                 />
               </Form.Item>
               <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button type='primary' htmlType='submit'>
+                <Button type='primary' htmlType='submit' disabled={!data.clients.length}>
                   Submit
                 </Button>
               </div>

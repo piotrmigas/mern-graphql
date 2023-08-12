@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { Watch } from 'react-loader-spinner';
 import ClientInfo from '../components/ClientInfo';
 import DeleteButton from '../components/DeleteButton';
@@ -8,11 +8,12 @@ import { GET_PROJECT } from '../queries/projectQueries';
 import { Card, Divider } from 'antd';
 
 export default function Project() {
+  const navigate = useNavigate();
   const { id } = useParams();
   const { loading, error, data } = useQuery(GET_PROJECT, { variables: { id } });
 
   if (loading) return <Watch width={25} wrapperStyle={{ display: 'flex', justifyContent: 'center' }} />;
-  if (error) return <p>Something Went Wrong</p>;
+  if (error) navigate('/error');
 
   const { project } = data;
 
