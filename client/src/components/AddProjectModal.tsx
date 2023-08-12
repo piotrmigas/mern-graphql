@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState } from 'react';
 import { FaList } from 'react-icons/fa';
 import { useMutation, useQuery } from '@apollo/client';
 import { ADD_PROJECT } from '../mutations/projectMutations';
@@ -7,15 +7,18 @@ import { GET_CLIENTS } from '../queries/clientQueries';
 import { Watch } from 'react-loader-spinner';
 import { Button, Modal, Input, Form, Select } from 'antd';
 
+type FieldType = {
+  name: string;
+  description: string;
+  status: string;
+  clientId: string;
+};
+
 export default function AddProjectModal() {
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [clientId, setClientId] = useState('');
-  const [status, setStatus] = useState('new');
+  const [form] = Form.useForm();
 
   const [addProject] = useMutation(ADD_PROJECT, {
-    variables: { name, description, clientId, status },
     update(cache, { data: { addProject } }) {
       const { projects } = cache.readQuery({ query: GET_PROJECTS });
       cache.writeQuery({
@@ -27,20 +30,14 @@ export default function AddProjectModal() {
 
   const { loading, error, data } = useQuery(GET_CLIENTS);
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (name === '' || description === '' || status === '') {
-      return alert('Please fill in all fields');
+  const onFinish = ({ name, description, status, clientId }: FieldType) => {
+    if (!name || !description || !clientId) {
+      alert('Please fill in all fields');
+    } else {
+      addProject({ variables: { name, description, clientId, status } });
+      form.resetFields();
+      setOpen(false);
     }
-
-    addProject();
-
-    setName('');
-    setDescription('');
-    setStatus('new');
-    setClientId('');
-    setOpen(false);
   };
 
   if (loading) return <Watch width={25} wrapperStyle={{ display: 'flex', justifyContent: 'center' }} />;
@@ -54,24 +51,16 @@ export default function AddProjectModal() {
             New Project
           </Button>
           <Modal title='New Project' open={open} onCancel={() => setOpen(false)} footer={null}>
-            <form onSubmit={onSubmit}>
-              <div style={{ margin: '20px 0' }}>
-                <label>Name</label>
-                <Input onChange={(e) => setName(e.target.value)} value={name} />
-              </div>
-              <div style={{ marginBottom: 20 }}>
-                <label>Description</label>
-                <Input.TextArea
-                  onChange={(e) => setDescription(e.target.value)}
-                  style={{ resize: 'none' }}
-                  value={description}
-                />
-              </div>
-              <Form.Item style={{ marginBottom: 20 }}>
-                <label>Status</label>
+            <Form initialValues={{ status: 'new' }} form={form} onFinish={onFinish} layout='vertical'>
+              <Form.Item name='name' style={{ margin: '20px 0' }} label='Name'>
+                <Input placeholder='Enter project name' />
+              </Form.Item>
+              <Form.Item name='description' style={{ marginBottom: 20 }} label='Description'>
+                <Input.TextArea style={{ resize: 'none' }} placeholder='Enter description' />
+              </Form.Item>
+              <Form.Item name='status' style={{ marginBottom: 20 }} label='Status'>
                 <Select
-                  value={status}
-                  onChange={(value) => setStatus(value)}
+                  onChange={(value) => form.setFieldValue('status', value)}
                   options={[
                     { value: 'new', label: 'Not Started' },
                     { value: 'progress', label: 'In Progress' },
@@ -79,11 +68,10 @@ export default function AddProjectModal() {
                   ]}
                 />
               </Form.Item>
-              <Form.Item>
-                <label>Client</label>
+              <Form.Item name='clientId' label='Client'>
                 <Select
-                  value={clientId}
-                  onChange={(value) => setClientId(value)}
+                  placeholder='Select client'
+                  onChange={(value) => form.setFieldValue('clientId', value)}
                   options={data.clients.map(({ id, name }: Client) => ({ value: id, label: name }))}
                 />
               </Form.Item>
@@ -92,7 +80,7 @@ export default function AddProjectModal() {
                   Submit
                 </Button>
               </div>
-            </form>
+            </Form>
           </Modal>
         </>
       )}

@@ -1,4 +1,3 @@
-import { useState, FormEvent } from 'react';
 import { useMutation } from '@apollo/client';
 import { GET_PROJECT } from '../queries/projectQueries';
 import { UPDATE_PROJECT } from '../mutations/projectMutations';
@@ -8,58 +7,46 @@ type Props = {
   project: Project;
 };
 
+type FieldType = {
+  name: string;
+  description: string;
+  status: string;
+};
+
 export default function EditProjectForm({ project }: Props) {
-  const [name, setName] = useState(project.name);
-  const [description, setDescription] = useState(project.description);
-  const [status, setStatus] = useState(() => {
-    switch (project.status) {
-      case 'Not Started':
-        return 'new';
-      case 'In Progress':
-        return 'progress';
-      case 'Completed':
-        return 'completed';
-      default:
-        throw new Error(`Unknown status: ${project.status}`);
-    }
-  });
+  const [form] = Form.useForm();
 
   const [updateProject] = useMutation(UPDATE_PROJECT, {
-    variables: { id: project.id, name, description, status },
     refetchQueries: [{ query: GET_PROJECT, variables: { id: project.id } }],
   });
 
-  const onSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
+  const onFinish = ({ name, description, status }: FieldType) => {
     if (!name || !description || !status) {
       return alert('Please fill out all fields');
     }
 
-    updateProject();
+    updateProject({ variables: { id: project.id, name, description, status } });
+  };
+
+  const initialValues = {
+    name: project.name,
+    description: project.description,
+    status: project.status,
   };
 
   return (
     <div style={{ marginTop: 20 }}>
       <Divider>Update Project Details</Divider>
-      <form onSubmit={onSubmit}>
-        <div style={{ marginBottom: 10 }}>
-          <label>Name</label>
-          <Input onChange={(e) => setName(e.target.value)} value={name} />
-        </div>
-        <div style={{ marginBottom: 10 }}>
-          <label>Description</label>
-          <Input.TextArea
-            value={description}
-            style={{ resize: 'none' }}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </div>
-        <Form.Item style={{ marginBottom: 20 }}>
-          <label>Status</label>
+      <Form onFinish={onFinish} layout='vertical' initialValues={initialValues} form={form}>
+        <Form.Item style={{ marginBottom: 10 }} label='Name' name='name'>
+          <Input placeholder='Enter project name' />
+        </Form.Item>
+        <Form.Item style={{ marginBottom: 10 }} label='Description' name='description'>
+          <Input.TextArea style={{ resize: 'none' }} placeholder='Enter description' />
+        </Form.Item>
+        <Form.Item style={{ marginBottom: 20 }} label='Status' name='status'>
           <Select
-            value={status}
-            onChange={(value) => setStatus(value)}
+            onChange={(value) => form.setFieldValue('status', value)}
             options={[
               { value: 'new', label: 'Not Started' },
               { value: 'progress', label: 'In Progress' },
@@ -70,7 +57,7 @@ export default function EditProjectForm({ project }: Props) {
         <Button type='primary' htmlType='submit'>
           Submit
         </Button>
-      </form>
+      </Form>
     </div>
   );
 }
