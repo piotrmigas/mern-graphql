@@ -17,7 +17,7 @@ export default function AddClientModal() {
 
   const [addClient] = useMutation(ADD_CLIENT, {
     update(cache, { data: { addClient } }) {
-      const { clients } = cache.readQuery({ query: GET_CLIENTS });
+      const { clients }: any = cache.readQuery({ query: GET_CLIENTS });
       cache.writeQuery({
         query: GET_CLIENTS,
         data: { clients: [...clients, addClient] },
