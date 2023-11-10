@@ -4,15 +4,7 @@ import { useMutation, useQuery } from '@apollo/client';
 import { ADD_PROJECT } from '../mutations/projectMutations';
 import { GET_PROJECTS } from '../queries/projectQueries';
 import { GET_CLIENTS } from '../queries/clientQueries';
-import { Watch } from 'react-loader-spinner';
 import { Button, Modal, Input, Form, Select } from 'antd';
-
-type FieldType = {
-  name: string;
-  description: string;
-  status: string;
-  clientId: string;
-};
 
 export default function AddProjectModal() {
   const [open, setOpen] = useState(false);
@@ -30,7 +22,7 @@ export default function AddProjectModal() {
 
   const { loading, error, data } = useQuery(GET_CLIENTS);
 
-  const onFinish = ({ name, description, status, clientId }: FieldType) => {
+  const onFinish = ({ name, description, status, clientId }: Project) => {
     if (!name || !description || !clientId) {
       alert('Please fill in all fields');
     } else {
@@ -40,49 +32,44 @@ export default function AddProjectModal() {
     }
   };
 
-  if (loading) return <Watch width={25} wrapperStyle={{ display: 'flex', justifyContent: 'center' }} />;
-  if (error) return 'Something Went Wrong';
-
   return (
     <>
+      <Button type='primary' danger onClick={() => setOpen(true)} icon={<FaList />}>
+        New Project
+      </Button>
       {!loading && !error && (
-        <>
-          <Button type='primary' danger onClick={() => setOpen(true)} icon={<FaList />}>
-            New Project
-          </Button>
-          <Modal title='New Project' open={open} onCancel={() => setOpen(false)} footer={null}>
-            <Form initialValues={{ status: 'new' }} form={form} onFinish={onFinish} layout='vertical'>
-              <Form.Item name='name' style={{ margin: '20px 0' }} label='Name'>
-                <Input placeholder='Enter project name' />
-              </Form.Item>
-              <Form.Item name='description' style={{ marginBottom: 20 }} label='Description'>
-                <Input.TextArea style={{ resize: 'none' }} placeholder='Enter description' />
-              </Form.Item>
-              <Form.Item name='status' style={{ marginBottom: 20 }} label='Status'>
-                <Select
-                  onChange={(value) => form.setFieldValue('status', value)}
-                  options={[
-                    { value: 'new', label: 'Not Started' },
-                    { value: 'progress', label: 'In Progress' },
-                    { value: 'completed', label: 'Completed' },
-                  ]}
-                />
-              </Form.Item>
-              <Form.Item name='clientId' label='Client'>
-                <Select
-                  placeholder='Select client'
-                  onChange={(value) => form.setFieldValue('clientId', value)}
-                  options={data.clients.map(({ id, name }: Client) => ({ value: id, label: name }))}
-                />
-              </Form.Item>
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Button type='primary' htmlType='submit' disabled={!data.clients.length}>
-                  Submit
-                </Button>
-              </div>
-            </Form>
-          </Modal>
-        </>
+        <Modal title='New Project' open={open} onCancel={() => setOpen(false)} footer={null}>
+          <Form initialValues={{ status: 'new' }} form={form} onFinish={onFinish} layout='vertical'>
+            <Form.Item name='name' style={{ margin: '20px 0' }} label='Name'>
+              <Input placeholder='Enter project name' />
+            </Form.Item>
+            <Form.Item name='description' style={{ marginBottom: 20 }} label='Description'>
+              <Input.TextArea style={{ resize: 'none' }} placeholder='Enter description' />
+            </Form.Item>
+            <Form.Item name='status' style={{ marginBottom: 20 }} label='Status'>
+              <Select
+                onChange={(value) => form.setFieldValue('status', value)}
+                options={[
+                  { value: 'new', label: 'Not Started' },
+                  { value: 'progress', label: 'In Progress' },
+                  { value: 'completed', label: 'Completed' },
+                ]}
+              />
+            </Form.Item>
+            <Form.Item name='clientId' label='Client'>
+              <Select
+                placeholder='Select client'
+                onChange={(value) => form.setFieldValue('clientId', value)}
+                options={data.clients.map(({ id, name }: Client) => ({ value: id, label: name }))}
+              />
+            </Form.Item>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Button type='primary' htmlType='submit' disabled={!data.clients.length}>
+                Submit
+              </Button>
+            </div>
+          </Form>
+        </Modal>
       )}
     </>
   );

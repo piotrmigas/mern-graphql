@@ -11,4 +11,13 @@ type Project = {
   description: string;
   status: string;
   client: Client;
+  clientId: string;
 };
+
+interface DataType {
+  key: string;
+  id: string;
+  name: number;
+  email: string;
+  phone: string;
+}

@@ -5,19 +5,11 @@ import { Table } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import DeleteButton from './DeleteButton';
 
-interface DataType {
-  key: string;
-  id: string;
-  name: number;
-  email: string;
-  phone: string;
-}
-
 export default function Clients() {
   const { loading, error, data } = useQuery(GET_CLIENTS);
 
   if (loading) return <Watch width={25} wrapperStyle={{ display: 'flex', justifyContent: 'center' }} />;
-  if (error) return <p>Something Went Wrong</p>;
+  if (error) return <div style={{ display: 'flex', justifyContent: 'center' }}>Something Went Wrong</div>;
 
   const columns: ColumnsType<DataType> = [
     {
