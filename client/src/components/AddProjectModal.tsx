@@ -12,7 +12,7 @@ export default function AddProjectModal() {
 
   const [addProject] = useMutation(ADD_PROJECT, {
     update(cache, { data: { addProject } }) {
-      const { projects }: any = cache.readQuery({ query: GET_PROJECTS });
+      const { projects } = cache.readQuery<{ projects: Project[] }>({ query: GET_PROJECTS })!;
       cache.writeQuery({
         query: GET_PROJECTS,
         data: { projects: [...projects, addProject] },
